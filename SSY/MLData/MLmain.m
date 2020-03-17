@@ -10,6 +10,7 @@ clear all; close all; clc;
 %                               simulation of PLC
 %--------------------------------------------------------------------------
 global Num INF;
+Num = 2048;
 INF = 1e1;
 % about transmitter
 global Fuc Fus beta Ndf Nhd Ngi Fsc N;		% ITU-G9660: PLC structure
@@ -28,7 +29,7 @@ global ZeroFre HighFre winLabel;
 ZeroFre = 0;	HighFre = 0;	winLabel = false;
 % frame structure
 global l fraNum;
-l = 10;		fraNum = 1;	
+l = 1;		fraNum = 1;	
 
 %--------------------------------------------------------------------------
 % about channel
@@ -64,14 +65,49 @@ iteration = 25;
 global simple;      % three or two
 simple = 3;
 global delay;
-delay = 18494;
+delay = 0;
 
+n = 1000;
+P = zeros(n, N);
+rsig = zeros(n,N);
+rsig1 = zeros(n,N);
+a = zeros(n,1);
+t = zeros(n,1);
+% sinr = zeros(151,151);
+pn = zeros(151*151, 1000);
 %% the Transmitter
-[Trans] = TransSig();
-%% Through channel
-recie = ThrouChan(Trans');
+tic;
+for i = 1:n
+%     Trans = QAMgene(N);
+%     Trans = Trans/sqrt(mean(Trans.^2));
+    Trans = TransSig();
+    P(i,:) = Trans;
+    recie = ThrouChan(Trans');
+    rsig(i,:) = recie;
+end
+toc;
+%% 
+tic;
+i = 0; j = 0;
+for a = 1:0.02:4
+    for t = 0.5:0.02:3.5
+        j = j + 1;
+        rsig1(abs(rsig) < t) = rsig(abs(rsig) < t);
+        rsig1(rsig > t) = t;
+        rsig1(rsig < -t) = -t;
+        rsig1(abs(rsig)> a*t) = 0;
+        n0 = abs(P' - rsig1');
+        pn(j,:) = sum(n0 .* n0);
+    end
+end
+toc;
+[pn_0,indexs] = min(pn);
+a = floor((indexs-1)/151)*0.02+1;
+t = (indexs - floor((indexs-1)/151)*151 -1)*0.02+0.5;
+sinr = -10*log10(2048/p);
+sinr_0 = 10*log10(2048./(sum(abs(P'-rsig').^2)));
 %% the Receiver
-[Topt,aopt,t1,t2,t3,t4] = estTime(recie);
+%[Topt,aopt,t1,t2,t3,t4] = estTime(recie);
 
 % the test
 %% the test_1: given SNR; different SIR from 0dB to 20dB with step of 5dB;
