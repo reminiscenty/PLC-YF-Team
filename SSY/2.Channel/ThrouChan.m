@@ -7,6 +7,8 @@ function [withImpul] = ThrouChan(input)
     withAWGN = awgn(input,SNR,'measured');
 % impulse noise
     withImpul = withAWGN + ImpulGen(Num);
+    withImpul = withAWGN + RejSampling(2*Num);
+% display
     %displayChal(input,withAWGN,withImpul);
 end
 %% display
@@ -41,8 +43,7 @@ function [impulse] = ImpulGen(num)
     matr2 = start2:step2:min(start2+step2*(impulNum/3),num);
     impulse(matr2) = impulse(matr2) + rand(length(matr2),1)-0.5;
 %% normalization with SIR
-    tempLen = length(matr1) + length(matr2);
-    impulse = impulse * sqrt(Pim / mean(impulse.^2)*Num/tempLen);
+    impulse = impulse * sqrt(Pim / sum(impulse.^2)*Num);
 end
 
 %% impulse noise by Huawei
