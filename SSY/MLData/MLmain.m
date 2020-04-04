@@ -10,12 +10,12 @@ clear all; close all; clc;
 %                               simulation of PLC
 %--------------------------------------------------------------------------
 global Num INF;
-Num = 256;
+Num = 2048;
 INF = 1e1;
 % about transmitter
 global Fuc Fus beta Ndf Nhd Ngi Fsc N;		% ITU-G9660: PLC structure
 Fus = 25e6; Fuc = 0; Fsc = 24.4140625e3;
-N = 256; Ngi = N/32; Nhd = N/4; Ndf = N/4;
+N = Num; Ngi = N/32; Nhd = N/4; Ndf = N/4;
 beta = N/8;
 global Ts Rs;
 Ts = 1.0/Fsc/N;
@@ -34,7 +34,7 @@ l = 1;		fraNum = 1;
 %--------------------------------------------------------------------------
 % about channel
 global  SNR SIR;
-SNR = -20;   SIR = 0; % dB
+SNR = 20;   SIR = 0; % dB
 global Pawgn Pim Psig PowerRatio;
 PowerRatio = 2;
 global lambda;
@@ -77,7 +77,7 @@ t = zeros(n,1);
 pn = zeros(151*151, 1000);
 %% the Transmitter
 tic;
-for i = 1:n
+for i = 1:1000
 %     Trans = QAMgene(N);
 %     Trans = Trans/sqrt(mean(Trans.^2));
     Trans = TransSig();
@@ -105,8 +105,8 @@ toc;
 a = floor((indexs-1)/151)*0.02+1;
 t = (indexs - floor((indexs-1)/151)*151 -1)*0.02+0.5;
 y = [a' t'];
-sinr = 10*log10(N/2./pn_0);
-sinr_0 = 10*log10(N/2./(sum((p'-rsig').^2)));
+sinr = 10*log10(N./pn_0);
+sinr_0 = 10*log10(N./(sum((p'-rsig').^2)));
 tr_sinr = mean(sinr(1:700));
 tr_sinr0 = mean(sinr_0(1:700));
 te_sinr = mean(sinr(701:1000));
@@ -116,6 +116,17 @@ subplot(1,2,1);
 histogram(a);
 subplot(1,2,2);
 histogram(t);
+
+
+%% 
+rsig2 = zeros(n,256);
+p2 = zeros(n,256);
+for i = 1:n
+    [B0, I0] = sort(abs(rsig(i,:)),'descend');
+    [B, I] = sort(I0(1:256), 'ascend');
+    rsig2(i,:) = rsig(i,B);
+    p2(i,:) = p(i,B);
+end
 
 %% the Receiver
 %[Topt,aopt,t1,t2,t3,t4] = estTime(recie);

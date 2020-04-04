@@ -32,14 +32,15 @@ function [impulse] = ImpulGen(num)
     impulse = zeros(num,1);
     % impulse 1
     start1 = randi(100);
-    step1 = floor(1e-6*Rs);
+    %step1 = floor(1e-6*Rs);
+    step1 = floor(num/5);
     matr1 = start1:step1:min(start1+step1*(impulNum/2),num);
     impulse(matr1) = impulse(matr1) + rand(length(matr1),1)-0.5;
     % impulse 2
     start2 = randi(100);
     step2 = floor(3e-6*Rs);
     matr2 = start2:step2:min(start2+step2*(impulNum/3),num);
-    impulse(matr2) = impulse(matr2) + rand(length(matr2),1)-0.5;
+    %impulse(matr2) = impulse(matr2) + rand(length(matr2),1)-0.5;
 %% normalization with SIR
     tempLen = length(matr1) + length(matr2);
     impulse = impulse * sqrt(Pim / sum(impulse.^2)*N);
