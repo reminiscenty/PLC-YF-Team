@@ -1,6 +1,12 @@
-function [output] = SINR(ave)
-    global Psig;
-    output = abs(Psig/(ave-Psig));
+function [output] = SINR(realsig,noise,T,a)
+    realsig(abs(realsig)>=T & abs(realsig)<=a*T) = T;
+    realsig(abs(realsig)>=a*T) = 0;
+    noise(abs(noise)>=T & abs(noise)<=a*T) = T;
+    noise(abs(noise)>=a*T) = 0;
+    PowReal = mean(realsig.^2);
+    PowNoise = mean(noise.^2);
+    %output = PowReal/PowNoise;
+    output = 10*log(PowReal/PowNoise)/log(10);
 end
 %{
 function [output] = SINR(ave)

@@ -46,7 +46,8 @@ function [frame] = frame_gener_noWIN(preamble,header,payload)
     global Fuc Fus beta Ndf Nhd Ngi Fsc N;
 %% normalization for preamble
     save 'preamble.mat' 'preamble';
-    preamble = preamble * sqrt(2 * mean((abs(header)).^2) / mean((abs(preamble)).^2));
+    preamble = preamble * sqrt(mean((abs(header)).^2) / mean((abs(preamble)).^2));
+    payload = payload * sqrt(mean((abs(header)).^2) / mean((abs(payload)).^2));
 %% overlap and add
     frame = [preamble,header,payload];
     save 'frame.mat' 'frame';

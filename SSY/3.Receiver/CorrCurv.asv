@@ -144,10 +144,7 @@ function [corr1,toa1,corr2,toa2] = CorrCurv_B(temp1,temp2)
 end
 %% the others
 function [corr1,corr2,corr3,corr4] = CorrCurv_C(temp1,temp2)
-    global N;
-    % temp1
-    
-    % temp2
+
 end
 function [corr1,corr2,corr3,corr4] = CorrCurv_D(temp1,temp2)
 end

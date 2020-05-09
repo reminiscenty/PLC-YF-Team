@@ -1,12 +1,12 @@
-function [output,runtime,T,a] = suppre(signal)
+function [output,runtime,T,a] = suppre(realsig,signal)
 %suppre: to suppress impulse noise of the signal
    global suplabel;
    global simple;
    tic;
    if suplabel==1
-        [T,a] = bruteForce(signal);
+        [T,a] = bruteForce(realsig,signal);
    elseif suplabel==2
-        [T,a] = Simulannealing(signal);
+        [T,a] = Simulannealing(realsig,signal);
    end
    runtime=toc;
    %[T1,a1] = bruteForce(signal);
@@ -14,42 +14,57 @@ function [output,runtime,T,a] = suppre(signal)
    output = f(signal,T,a);
 end
 
-function [T,a] = bruteForce(signal)
+function [T,a] = bruteForce(realsig,signal)
 %generationAT: obtain the optimal parameters T and a for impulse noise suppression
     global stepA stepT simple;
-    scaleA = 1:stepA:4;
+    scaleA = 1:0.2:3.5;
     if simple == 2
         scaleA = 1;
     end
-    scaleT = 1:stepT:4;
+    scaleT = 0:0.05:5;
     res = ones(length(scaleA),length(scaleT));
+    MAX = max(abs(signal));
     for a_index = 1:length(scaleA)
         for T_index = 1:length(scaleT)
-            temp = f(signal,scaleT(T_index),scaleA(a_index));     % Receiver doesn't know P 
-            ave = mean(temp.^2);
-            res(a_index,T_index) = SINR(ave);%exp(SINR(ave));
+            %temp = f(signal,scaleT(T_index),scaleA(a_index));     % Receiver doesn't know P 
+            noise = signal - realsig;   % 噪声
+            % 上帝视角
+            %ave = mean(temp.^2);
+            if scaleT(T_index) * scaleA(a_index) >= MAX
+                res(a_index,T_index) = 0;
+                continue;
+            end
+            res(a_index,T_index) = SINR(realsig,noise,scaleT(T_index),scaleA(a_index));%exp(SINR(ave));
         end
     end
     % display
+        
+%     figure;  hold on;
+%     pcolor(scaleT,scaleA,res);
+%     shading interp;
+%     colorbar;   colormap(jet);
+%     xlabel('T');ylabel('a');
     
-  %{  
-    figure;  hold on;
-    pcolor(scaleT,scaleA,res);
-    shading interp;
-    colorbar;   colormap(jet);
-    xlabel('T');ylabel('a');
-    %}
     
-    % T
-    [~,resT] = max(max(res));
-    T = scaleT(resT);
-    % a
-    [~,resA] = max(res(:,resT));
-    a = scaleA(resA);
+    %plot(res);
+    if simple == 3
+        % T
+        [~,resT] = max(max(res));
+        T = scaleT(resT);
+        % a
+        [~,resA] = max(res(:,resT));
+        a = scaleA(resA);
+    elseif simple==2
+        % T
+        [~,resT] = max(res);
+        T = scaleT(resT);
+        % a
+        a = 1;
+    end
 end
 
 %% 模拟退火
-function [Topt,Aopt] = Simulannealing(signal)
+function [Topt,Aopt] = Simulannealing(realsig,signal)
     global simple;
     if simple == 2
         [Topt,Aopt] = Simul2(signal);
@@ -60,7 +75,7 @@ function [Topt,Aopt] = Simulannealing(signal)
     end
 end
 % 两段式
-function [Topt,Aopt] = Simul2(signal)
+function [Topt,Aopt] = Simul2(realsig,signal)
     global T Tmin delta stepT stepA itertime;
     Tempra = T;
     count = 1;
@@ -105,7 +120,7 @@ function [] = dispSimu2(recordT)
     title('两段式模拟退火搜索路径');
 end
 % 三段式
-function [Topt,Aopt] = Simul3(signal)
+function [Topt,Aopt] = Simul3(realsig,signal)
     global T Tmin delta stepT stepA itertime;
     Tempra = T;
     count = 1;
@@ -122,13 +137,13 @@ function [Topt,Aopt] = Simul3(signal)
             T_next = Topt + (randi(3)-2)*stepT;  A_next = Aopt + (randi(3)-2)*stepA;
             if A_next<1
                 A_next = 1.1;
-            elseif A_next > 5
-                A_next = 4;
+            elseif A_next > 4
+                A_next = 3;
             end
             if T_next < 1.5
-                T_next = 1.8;
-            elseif T_next > 5
-                T_next = 4;
+                T_next = 2;
+            elseif T_next > 3.5
+                T_next = 3;
             end
             signal_next = f(signal,T_next,A_next);
             E_next = SINR(mean(signal_next.^2));

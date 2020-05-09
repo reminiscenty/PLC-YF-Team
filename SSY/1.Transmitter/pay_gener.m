@@ -94,7 +94,7 @@ function [payload] = pay_gener_noWIN()
 %% cut off the payload into blocks and do ifft respectively
     PAY = [];
 	for index = 1:l-1
-		PAY = [PAY,QAMgene(N)'];
+		PAY = [PAY,QAMgene(N)];
 	end
     pay = ifft(PAY,N);  pay(1,:) = zeros(1,l-1);    % time-domain payload
     %pay = reshape(pay,1,N*(l-1));

@@ -1,4 +1,4 @@
-function [withImpul] = ThrouChan(input)
+function [withImpul] = ThrouChan(input,impulse)
 %TransSig: the generation the Rx
 %   
 % delay
@@ -6,8 +6,8 @@ function [withImpul] = ThrouChan(input)
 % AWGN
     withAWGN = awgn(input,SNR,'measured');
 % impulse noise
-    withImpul = withAWGN + ImpulGen(Num);
-    withImpul = withAWGN + RejSampling(2*Num);
+    withImpul = withAWGN + [impulse,zeros(1,length(withAWGN)-length(impulse))];
+    %withImpul = withAWGN + RejSampling(2*Num);
 % display
     %displayChal(input,withAWGN,withImpul);
 end
@@ -25,28 +25,6 @@ function [output] = displayChal(input,withAWGN,withImpul)
     hold off;
 end
 
-%% impulse noise by manually
-function [impulse] = ImpulGen(num)
-%ImpulGen: the generation the Impulse noise
-%   
-    global Pim Rs Num;
-    impulNum = randi(floor(num/3)) + num/3;
-    impulse = zeros(num,1);
-    % impulse 1
-    start1 = randi(100);
-    step1 = floor(1e-6*Rs);
-    matr1 = start1:step1:min(start1+step1*(impulNum/2),num);
-    impulse(matr1) = impulse(matr1) + rand(length(matr1),1)-0.5;
-    % impulse 2
-    start2 = randi(100);
-    step2 = floor(3e-6*Rs);
-    matr2 = start2:step2:min(start2+step2*(impulNum/3),num);
-    impulse(matr2) = impulse(matr2) + rand(length(matr2),1)-0.5;
-%% normalization with SIR
-    impulse = impulse * sqrt(Pim / sum(impulse.^2)*Num);
-end
 
-%% impulse noise by Huawei
-function [impulse] = car(num)
-    a = 1;
-end
+
+

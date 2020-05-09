@@ -15,7 +15,8 @@ end
 function [header] = hea_gener_WIN()
 	global Fuc Fus beta Ndf Nhd Ngi Fsc N;
 %% do ifft
-	load header.mat; HEAD = ans;
+	load header.mat; 
+    HEAD = output;
     head = ifft(HEAD,N);  head(1) = 0;  % time-domain payload
     %pay = reshape(pay,1,N*(l-1));
 %% adding the CP to OFDM block
